@@ -1,0 +1,90 @@
+---
+import { AuthorRepository } from "../../adapter/database/author.repository";
+import { Breadcrumbs } from "../../components/Breadcrumb";
+import { PageTitle } from "../../components/PageTitle";
+import { PostCard } from "../../components/PostCard";
+import { NotFoundError } from "../../errors/not-found.error";
+import Layout from "../../layouts/Layout.astro";
+import {
+  GetAuthorDetailUseCase,
+  type AuthorForAuthorDetail,
+} from "../../usecases/author/[id]/get-author-detail.usecase";
+import { renderErrorPage } from "../../utils/error-page";
+import { isNumber } from "../../utils/is-number";
+
+if (!Astro.params.id) {
+  return renderErrorPage("id が指定されていません。", 400);
+}
+
+if (!isNumber(Astro.params.id)) {
+  console.error(`${Astro.params.id} is not a number`);
+  return renderErrorPage("不正なリクエストです", 400);
+}
+
+const id = parseInt(Astro.params.id, 10);
+
+const useCase = new GetAuthorDetailUseCase(new AuthorRepository());
+
+let author: AuthorForAuthorDetail;
+
+try {
+  author = await useCase.execute(id);
+} catch (e) {
+  console.error(e);
+
+  if (e instanceof NotFoundError) {
+    return renderErrorPage("指定された著者は見つかりませんでした", 404);
+  }
+
+  return renderErrorPage("不明なエラーが発生しました", 500);
+}
+
+const pageTitle = author.name;
+---
+
+<Layout title={pageTitle}>
+  <Breadcrumbs
+    breadcrumbs={[
+      {
+        label: "著者",
+        href: "/author",
+      },
+      {
+        label: author.name,
+        href: `/author/${author.id}`,
+      },
+    ]}
+  />
+  <main>
+    <div class="px-4">
+      <div class="mt-8">
+        <PageTitle title={pageTitle} />
+      </div>
+      {
+        author.thumbnailUrl && (
+          <div class="flex flex-1 flex-col p-8">
+            <img
+              class="mx-auto h-60 w-60 flex-shrink-0 rounded-full md:h-96 md:w-96"
+              src={author.thumbnailUrl}
+              alt={`Thumbnail image for ${author.name}`}
+            />
+          </div>
+        )
+      }
+      <div class="mt-8">{author.profile}</div>
+      <h2 class="mt-8 text-2xl font-bold">{author.name}の投稿</h2>
+      <ul class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+        {
+          author.posts.map((post) => (
+            <PostCard
+              id={post.id}
+              title={post.title}
+              publishedAt={post.publishedAt}
+              thumbnailUrl={post.thumbnailUrl}
+            />
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+</Layout>

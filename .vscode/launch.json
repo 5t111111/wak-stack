@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "(cms) Listen for XDebug",
+      "type": "php",
+      "request": "launch",
+      "port": 9003,
+      "pathMappings": {
+        "/workspaces/wack-stack": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "(frontend) Astro development server",
+      "command": "export $(cat .env.runtime) && ./node_modules/.bin/astro dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ]
+}

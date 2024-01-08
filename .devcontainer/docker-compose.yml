@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: ./docker/app
+    init: true
+    volumes:
+      - ..:/workspaces/wack-stack:cached
+    extra_hosts:
+      - "localhost.localdomain:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./docker/web
+    ports:
+      - "80:80"
+    volumes:
+      - ..:/workspaces/wack-stack:cached
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "33060:3306"
+    environment:
+      MYSQL_DATABASE: "wack_stack"
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:

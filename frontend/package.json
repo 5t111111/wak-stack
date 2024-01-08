@@ -1,0 +1,42 @@
+{
+  "name": "@wack-stack/frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "export $(cat .env.runtime) && astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "export $(cat .env.runtime.test) && vitest"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.3.4",
+    "@astrojs/node": "^7.0.3",
+    "@astrojs/react": "^3.0.9",
+    "@astrojs/tailwind": "^5.1.0",
+    "@heroicons/react": "^2.1.1",
+    "astro": "^4.0.8",
+    "embla-carousel-autoplay": "^8.0.0-rc18",
+    "embla-carousel-react": "^8.0.0-rc18",
+    "kysely": "^0.26.3",
+    "mysql2": "^3.6.5",
+    "php-serialize": "^4.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^20.10.6",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "kysely-codegen": "^0.11.0",
+    "prettier": "^3.1.1",
+    "prettier-plugin-astro": "^0.12.3",
+    "prettier-plugin-astro-organize-imports": "^0.3.3",
+    "prettier-plugin-organize-imports": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.10",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.1"
+  }
+}

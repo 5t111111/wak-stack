@@ -1,0 +1,97 @@
+---
+import { CategoryRepository } from "../../adapter/database/category.repository";
+import { Breadcrumbs } from "../../components/Breadcrumb";
+import { PageTitle } from "../../components/PageTitle";
+import { Pagination } from "../../components/Pagination";
+import { PostCard } from "../../components/PostCard";
+import { NotFoundError } from "../../errors/not-found.error";
+import Layout from "../../layouts/Layout.astro";
+import {
+  GetCategoryDetailUseCase,
+  type CategoryForCategoryDetail,
+} from "../../usecases/category/[slug]/get-category-detail.usecase";
+import { renderErrorPage } from "../../utils/error-page";
+import { isNumber } from "../../utils/is-number";
+
+if (!Astro.params.slug) {
+  return renderErrorPage("slug が指定されていません。", 400);
+}
+
+const pagedParam = Astro.url.searchParams.get("paged");
+
+let paged: number | undefined = undefined;
+
+if (pagedParam) {
+  if (!isNumber(pagedParam)) {
+    console.error("Invalid paged param (NaN):", pagedParam);
+    return renderErrorPage("パラメータが不正です。", 400);
+  }
+
+  paged = parseInt(pagedParam, 10);
+
+  if (paged <= 0) {
+    console.error("Invalid paged param (zero or smaller):", pagedParam);
+    return renderErrorPage("パラメータが不正です。", 400);
+  }
+}
+
+const useCase = new GetCategoryDetailUseCase(new CategoryRepository());
+
+let category: CategoryForCategoryDetail;
+
+try {
+  category = await useCase.execute(Astro.params.slug, paged ?? 1);
+} catch (e) {
+  console.error(e);
+
+  if (e instanceof NotFoundError) {
+    return renderErrorPage("指定されたカテゴリーは見つかりませんでした", 404);
+  }
+
+  return renderErrorPage("不明なエラーが発生しました", 500);
+}
+
+const pageTitle = category.name;
+---
+
+<Layout title={pageTitle}>
+  <Breadcrumbs
+    breadcrumbs={[
+      {
+        label: pageTitle,
+        href: `/category/${category.slug}`,
+      },
+    ]}
+  />
+  <main>
+    <div class="px-4">
+      <div class="mt-8">
+        <PageTitle title={pageTitle} />
+      </div>
+      <ul class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+        {
+          category.postList.items.map((post) => (
+            <PostCard
+              id={post.id}
+              title={post.title}
+              publishedAt={post.publishedAt}
+              thumbnailUrl={post.thumbnailUrl}
+            />
+          ))
+        }
+      </ul>
+      <Pagination
+        prevLink={category.postList.pagination.hasPrevPage
+          ? `/category/${category.slug}?paged=${
+              category.postList.pagination.currentPage - 1
+            }`
+          : undefined}
+        nextLink={category.postList.pagination.hasNextPage
+          ? `/category/${category.slug}?paged=${
+              category.postList.pagination.currentPage + 1
+            }`
+          : undefined}
+      />
+    </div>
+  </main>
+</Layout>

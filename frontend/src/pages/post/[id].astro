@@ -1,0 +1,81 @@
+---
+import { PostRepository } from "../../adapter/database/post.repository";
+import { Breadcrumbs } from "../../components/Breadcrumb";
+import { PostHeading } from "../../components/PostHeading";
+import { NotFoundError } from "../../errors/not-found.error";
+import Layout from "../../layouts/Layout.astro";
+import {
+  GetPostDetailUseCase,
+  type PostForPostDetail,
+} from "../../usecases/post/[id]/get-post-detail.usecase";
+import { renderErrorPage } from "../../utils/error-page";
+import { isNumber } from "../../utils/is-number";
+
+if (!Astro.params.id) {
+  return renderErrorPage("id が指定されていません。", 400);
+}
+
+if (!isNumber(Astro.params.id)) {
+  console.error(`${Astro.params.id} is not a number`);
+  return renderErrorPage("不正なリクエストです", 400);
+}
+
+const id = parseInt(Astro.params.id, 10);
+
+const useCase = new GetPostDetailUseCase(new PostRepository());
+
+let post: PostForPostDetail;
+
+try {
+  post = await useCase.execute(id);
+} catch (e) {
+  console.error(e);
+
+  if (e instanceof NotFoundError) {
+    return renderErrorPage("指定された投稿は見つかりませんでした", 404);
+  }
+
+  return renderErrorPage("不明なエラーが発生しました", 500);
+}
+
+const pageTitle = post.title;
+---
+
+<Layout title={pageTitle}>
+  <Breadcrumbs
+    breadcrumbs={[
+      {
+        label: post.category.name,
+        href: `/category/${post.category.slug}`,
+      },
+      {
+        label: post.title,
+        href: `/post/${post.id}`,
+      },
+    ]}
+  />
+  <main>
+    <PostHeading
+      title={post.title}
+      thumbnailUrl={post.thumbnailUrl}
+      publishedAt={post.publishedAt}
+      description={post.description}
+      category={{ name: post.category.name, slug: post.category.slug }}
+      author={{
+        id: post.author.id,
+        name: post.author.name,
+        thumbnailUrl: post.author.thumbnailUrl,
+      }}
+      series={post.series && {
+        id: post.series.id,
+        title: post.series.title,
+      }}
+    />
+    <hr class="my-8 h-px border-0 bg-gray-200" />
+    {
+      post.content && (
+        <article class="prose mt-6 max-w-none px-4" set:html={post.content} />
+      )
+    }
+  </main>
+</Layout>

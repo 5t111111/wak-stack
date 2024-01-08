@@ -1,0 +1,85 @@
+---
+import { SeriesRepository } from "../../adapter/database/series.repository";
+import { Breadcrumbs } from "../../components/Breadcrumb";
+import { PostCard } from "../../components/PostCard";
+import { SeriesHeading } from "../../components/SeriesHeading";
+import { NotFoundError } from "../../errors/not-found.error";
+import Layout from "../../layouts/Layout.astro";
+import {
+  GetSeriesDetailUseCase,
+  type SeriesForSeriesDetail,
+} from "../../usecases/series/[id]/get-series-detail.usecase";
+import { renderErrorPage } from "../../utils/error-page";
+import { isNumber } from "../../utils/is-number";
+
+if (!Astro.params.id) {
+  return renderErrorPage("id が指定されていません。", 400);
+}
+
+if (!isNumber(Astro.params.id)) {
+  console.error(`${Astro.params.id} is not a number`);
+  return renderErrorPage("不正なリクエストです", 400);
+}
+
+const id = parseInt(Astro.params.id, 10);
+
+const useCase = new GetSeriesDetailUseCase(new SeriesRepository());
+
+let series: SeriesForSeriesDetail;
+
+try {
+  series = await useCase.execute(id);
+} catch (e) {
+  console.error(e);
+
+  if (e instanceof NotFoundError) {
+    return renderErrorPage("指定された連載は見つかりませんでした", 404);
+  }
+
+  return renderErrorPage("不明なエラーが発生しました", 500);
+}
+
+const pageTitle = series.title;
+---
+
+<Layout title={pageTitle}>
+  <Breadcrumbs
+    breadcrumbs={[
+      {
+        label: "連載",
+        href: "/series",
+      },
+      {
+        label: series.title,
+        href: `/series/${series.id}`,
+      },
+    ]}
+  />
+  <main>
+    <SeriesHeading
+      title={series.title}
+      thumbnailUrl={series.thumbnailUrl}
+      description={series.description}
+      author={{
+        id: series.author.id,
+        name: series.author.name,
+        thumbnailUrl: series.author.thumbnailUrl,
+      }}
+    />
+    <hr class="my-8 h-px border-0 bg-gray-200" />
+    <div class="px-4">
+      <ul class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+        {
+          series.posts.map((post) => (
+            <PostCard
+              id={post.id}
+              title={post.title}
+              publishedAt={post.publishedAt}
+              thumbnailUrl={post.thumbnailUrl}
+            />
+          ))
+        }
+      </ul>
+    </div>
+  </main>
+</Layout>

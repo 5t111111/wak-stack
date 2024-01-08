@@ -1,0 +1,96 @@
+---
+import { Footer } from "../components/Footer";
+import Navbar from "../components/NavbarWrapper.astro";
+
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
+
+const metaTitle = title
+  ? `${title} | WACK Stack Showcase`
+  : "WACK Stack Showcase";
+const metaDescription =
+  "WACK Stack Showcase. Built with WordPress, Astro, CDN and Kysely.";
+const metaOgImageUrl = "https://wack.kodansha.tech/og-image.png";
+const metaSiteName = "WACK Stack";
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={metaDescription} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <meta property="og:site_name" content={metaSiteName} />
+    <meta property="og:image" content={metaOgImageUrl} />
+    <meta property="og:title" content={metaTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={metaOgImageUrl} />
+    <meta name="twitter:title" content={metaTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="robots" content="max-image-preview:large" />
+    <title>{metaTitle}</title>
+  </head>
+  <body class="bg-white">
+    <Navbar />
+    <div class="container mx-auto max-w-7xl"><slot /></div>
+    <Footer />
+  </body>
+</html>
+
+<style is:global>
+  html {
+    background: #fff;
+    height: 100%;
+  }
+
+  body {
+    height: 100%;
+  }
+
+  footer {
+    position: sticky;
+    top: 100vh;
+    top: 100dvh;
+  }
+
+  .embla {
+    --slide-spacing: 1rem;
+    --slide-size: 80%;
+    --slide-height: 32rem;
+
+    @media screen and (max-width: 480px) {
+      --slide-height: 24rem;
+    }
+  }
+
+  .embla__viewport {
+    overflow: hidden;
+  }
+
+  .embla__container {
+    backface-visibility: hidden;
+    display: flex;
+    touch-action: pan-y;
+    margin-left: calc(var(--slide-spacing) * -1);
+  }
+
+  .embla__slide {
+    flex: 0 0 var(--slide-size);
+    min-width: 0;
+    padding-left: var(--slide-spacing);
+    position: relative;
+  }
+
+  .embla__slide__img {
+    display: block;
+    height: var(--slide-height);
+    width: 100%;
+    object-fit: cover;
+  }
+</style>

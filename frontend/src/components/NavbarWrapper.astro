@@ -1,0 +1,7 @@
+---
+import { Navbar } from "./Navbar";
+
+const currentPathname = Astro.url.pathname;
+---
+
+<Navbar client:load currentPathname={currentPathname} />

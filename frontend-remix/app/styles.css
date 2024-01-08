@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
+footer {
+  position: sticky;
+  top: 100vh;
+  top: 100dvh;
+}
+
+.embla {
+  --slide-spacing: 1rem;
+  --slide-size: 80%;
+  --slide-height: 32rem;
+
+  @media screen and (max-width: 480px) {
+    --slide-height: 24rem;
+  }
+}
+
+.embla__viewport {
+  overflow: hidden;
+}
+
+.embla__container {
+  backface-visibility: hidden;
+  display: flex;
+  touch-action: pan-y;
+  margin-left: calc(var(--slide-spacing) * -1);
+}
+
+.embla__slide {
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+  padding-left: var(--slide-spacing);
+  position: relative;
+}
+
+.embla__slide__img {
+  display: block;
+  height: var(--slide-height);
+  width: 100%;
+  object-fit: cover;
+}
